@@ -1,0 +1,76 @@
+networks:
+  dockernetwork:
+    external: true
+services:
+  nextcloud:
+    image: linuxserver/nextcloud:latest
+    hostname: nextcloud
+    container_name: nextcloud
+    # Adding security option to prevent new privileges from being granted
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      dockernetwork:
+        ipv4_address: 172.28.1.98
+    ports:
+      - 443:443
+    volumes:
+      - ./nextcloud/data:/data
+      - ./nextcloud/config:/config
+    environment:
+      TZ: Asia/Kolkata # Set the timezone to Kolkata (IST)
+      PUID: 1000 # This sets the user ID for Nextcloud.
+      PGID: 1000 # This sets the group ID for Nextcloud.
+      # DOCKER_MODS: linuxserver/mods:universal-package-install|linuxserver/mods:nextcloud-mediadc # Uncomment the line to enable universal-package-install and nextcloud-mediadc mods.
+      # INSTALL_PACKAGES: git|nano|ffmpeg # Uncomment the line to Install git, nano, and ffmpeg packages
+    restart: unless-stopped
+      # The following section is commented out to prevent any GPU reservation from being made.
+      # Please uncomment it if you want to enable GPU support for the container.
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: 1
+    #           capabilities: [gpu]
+
+  redis:
+    image: redis
+    hostname: redis
+    container_name: redis
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      dockernetwork:
+        ipv4_address: 172.28.1.99
+    expose:
+      - 6379
+    volumes:
+      - ./redis/data:/data
+    environment:
+      REDIS_PASSWORD: $REDIS_PASSWORD
+      REDIS_IO_THREAD: 4 # Number of I/O threads to use for Redis operations
+      REDIS_IO_THREADS_DO_READS: 'yes' # Allow I/O threads to perform read operations
+    restart: unless-stopped
+
+  postgresql:
+    image: postgres:16
+    hostname: postgresql
+    container_name: postgresql
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      dockernetwork:
+        ipv4_address: 172.28.1.100
+    expose:
+      - 5432
+    volumes:
+      - ./postgresql/data:/var/lib/postgresql/data
+    environment:
+      POSTGRESQL_TIMEZONE: Asia/Kolkata # Set the timezone to Kolkata (IST) for PostgreSQL.
+      POSTGRESQL_LOG_TIMEZONE: Asia/Kolkata # Set the log timezone to Kolkata (IST) for PostgreSQL.
+      ALLOW_EMPTY_PASSWORD: no # Prevent empty passwords for PostgreSQL.
+      POSTGRES_USER: $POSTGRES_USER # Set the PostgreSQL username from an environment variable.
+      POSTGRES_PASSWORD: $POSTGRES_PASSWORD # Set the PostgreSQL password from an environment variable.
+      POSTGRES_DB: "nextcloud" # Set the default database name to "nextcloud".
+    restart: unless-stopped
