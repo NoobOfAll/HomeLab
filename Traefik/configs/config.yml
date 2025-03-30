@@ -1,0 +1,65 @@
+# Docs: https://doc.traefik.io/traefik/providers/file/
+http:
+  routers:
+    traefik-secured:
+      entryPoints:
+        - "https"
+      rule: "Host(`traefik.yourdomain.com`)"
+      middlewares:
+        - default_headers
+        - cloudflarewarped
+      tls:
+        certResolver: cloudflare
+        domains:
+          - main: "yourdomain.com"
+            sans:
+              - "*.yourdomain.com"
+      service: api@internal
+    example:
+      entryPoints:
+        - "https"
+      rule: "Host(`example.yourdomain.com`)"
+      middlewares:
+        - default_headers
+        - cloudflarewarped
+      tls:
+        certResolver: cloudflare
+        domains:
+          - main: "yourdomain.com"
+            sans:
+              - "*.yourdomain.com"
+      service: example
+
+  ##############
+
+  services:
+    example:
+      loadBalancer:
+        servers:
+          - url: "https://exampleIP:examplePort"
+        passHostHeader: true
+        sticky:
+          cookie:
+            name: example
+            secure: true
+            SameSite: strict
+
+  ##############
+
+  middlewares:
+    default_headers:
+      headers:
+        frameDeny: true
+        browserXssFilter: true
+        contentTypeNosniff: true
+        forceSTSHeader: true
+        stsIncludeSubdomains: true
+        stsPreload: true
+        stsSeconds: 15552000
+        customFrameOptionsValue: SAMEORIGIN
+    cloudflarewarped:
+      plugin:
+        cloudflarewarp:
+          disableDefault: false
+          trustip:
+            - "<cloudflareContainerIP>"

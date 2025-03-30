@@ -1,0 +1,44 @@
+global:
+  checkNewVersion: true
+  sendAnonymousUsage: true
+api:
+  dashboard: true
+entryPoints:
+  https:
+    address: :443
+serversTransport:
+  insecureSkipVerify: true
+providers:
+  file:
+    filename: /config.yml
+    watch: true
+certificatesResolvers:
+  cloudflare:
+    acme:
+      email: "youremail@domain.com"
+      storage: "acme.json"
+      # caServer: "https://acme-v02.api.letsencrypt.org/directory" # prod (default)
+      caServer: "https://acme-staging-v02.api.letsencrypt.org/directory" # staging (for testing)
+      dnsChallenge:
+        provider: cloudflare
+        resolvers:
+          - "1.1.1.1:53"
+          - "1.0.0.1:53"
+log:
+  filePath: /logs/traefik.log
+  level: "INFO"
+  format: json
+accesslog:
+  filepath: /logs/access.log
+  format: json
+  addInternals: true
+  fields:
+    defaultMode: keep
+    headers:
+      defaultmode: keep
+
+experimental:
+  plugins:
+    cloudflarewarp:
+      moduleName: github.com/BetterCorp/cloudflarewarp
+      version: v1.3.3
