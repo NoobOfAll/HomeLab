@@ -1,0 +1,17 @@
+networks:
+  dockernetwork:
+    external: true
+services:
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    hostname: cloudflared
+    container_name: cloudflared
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      dockernetwork:
+        ipv4_address: 172.28.1.2
+    command: tunnel --no-autoupdate run
+    environment:
+      TUNNEL_TOKEN: $CF_TUNNEL_TOKEN
+    restart: unless-stopped
