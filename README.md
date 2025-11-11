@@ -13,5 +13,4 @@ Articles for Homelab Applications. Various Docker-Compose Files and other relate
 ---
 ### Project Management
 1. [Nextcloud](./Nextcloud/Readme.md) - A file sharing and collaboration platform for teams.
-
 ---
